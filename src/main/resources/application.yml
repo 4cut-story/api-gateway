@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: api-gateway
+  threads:
+    virtual:
+      enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # auth-service가 공개하는 공개키로 로컬 검증만 한다
+          jwk-set-uri: ${gateway.auth-url}/.well-known/jwks.json
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 2000
+            response-timeout: 30s
+
+gateway:
+  auth-url: ${SERVICES_AUTH_URL:http://localhost:8081}
+  conversation-url: ${SERVICES_CONVERSATION_URL:http://localhost:8082}
+  content-url: ${SERVICES_CONTENT_URL:http://localhost:8083}
+  # 교체 중에는 GPU_WORKER_TOKEN_NEXT에 새 토큰을 넣는다
+  worker-tokens:
+    - ${GPU_WORKER_TOKEN:}
+    - ${GPU_WORKER_TOKEN_NEXT:}
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
