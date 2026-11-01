@@ -134,6 +134,47 @@ class GatewayIntegrationTest {
   }
 
   @Test
+  @DisplayName("공개 만화 보기 GET은 토큰 없이 통과하고 사용자 헤더는 붙이지 않는다 (외부 값도 지운다)")
+  void anonymousReadIsAllowed() {
+    for (String path :
+        List.of(
+            "/api/v1/feed",
+            "/api/v1/posts?authorId=abc",
+            "/api/v1/posts/abc",
+            "/api/v1/posts/abc/image",
+            "/api/v1/posts/abc/comments",
+            "/api/v1/follows/abc/stats",
+            "/api/v1/users?ids=abc",
+            "/api/v1/users/lookup?nickname=marco")) {
+      client.get().uri(path).header("X-User-Id", "attacker").exchange().expectStatus().isOk();
+      assertThat(BACKEND.lastHeaders()).doesNotContainKeys("x-user-id", "x-user-roles");
+    }
+  }
+
+  @Test
+  @DisplayName("공개 보기 경로라도 쓰기와 그 밖의 경로는 토큰이 필요하다")
+  void anonymousWriteIsUnauthorized() {
+    client.post().uri("/api/v1/posts").exchange().expectStatus().isUnauthorized();
+    client.put().uri("/api/v1/posts/abc/like").exchange().expectStatus().isUnauthorized();
+    client.get().uri("/api/v1/comics").exchange().expectStatus().isUnauthorized();
+    client.get().uri("/api/v1/me").exchange().expectStatus().isUnauthorized();
+    assertThat(BACKEND.lastPath()).isNull();
+  }
+
+  @Test
+  @DisplayName("공개 보기 경로에 토큰이 있으면 검증하고 사용자 헤더를 붙인다")
+  void anonymousPathWithTokenCarriesUser() {
+    client
+        .get()
+        .uri("/api/v1/posts?authorId=abc")
+        .header("Authorization", "Bearer " + validToken())
+        .exchange()
+        .expectStatus()
+        .isOk();
+    assertThat(BACKEND.lastHeaders()).containsEntry("x-user-id", USER);
+  }
+
+  @Test
   @DisplayName("위조된 토큰은 401 UNAUTHORIZED")
   void forgedTokenIsUnauthorized() {
     String forged =
