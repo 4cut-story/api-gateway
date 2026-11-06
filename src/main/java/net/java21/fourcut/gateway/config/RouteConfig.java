@@ -30,7 +30,12 @@ public class RouteConfig {
         .route(
             "conversation-service",
             r ->
-                r.path("/api/v1/conversations", "/api/v1/conversations/**", "/internal/gpu-jobs/**")
+                r.path(
+                        "/api/v1/conversations",
+                        "/api/v1/conversations/**",
+                        "/api/v1/characters",
+                        "/api/v1/characters/**",
+                        "/internal/gpu-jobs/**")
                     .uri(properties.conversationUrl()))
         .route(
             "content-service",

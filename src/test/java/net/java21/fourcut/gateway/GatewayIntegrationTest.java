@@ -100,6 +100,21 @@ class GatewayIntegrationTest {
   }
 
   @Test
+  @DisplayName("캐릭터 갤러리(/api/v1/characters/**)는 로그인한 사람만 conversation-service로 보낸다")
+  void routesCharacterGallery() {
+    client
+        .get()
+        .uri("/api/v1/characters/looks/abc/image")
+        .header("Authorization", "Bearer " + validToken())
+        .exchange()
+        .expectStatus()
+        .isOk();
+    assertThat(BACKEND.lastPath()).isEqualTo("/api/v1/characters/looks/abc/image");
+
+    client.get().uri("/api/v1/characters").exchange().expectStatus().isUnauthorized();
+  }
+
+  @Test
   @DisplayName("인증이 없는 /auth 경로에서도 외부 사용자 헤더를 지운다")
   void stripsForgedHeadersOnPublicPath() {
     client
