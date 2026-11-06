@@ -100,7 +100,7 @@ class GatewayIntegrationTest {
   }
 
   @Test
-  @DisplayName("캐릭터 갤러리(/api/v1/characters/**)는 로그인한 사람만 conversation-service로 보낸다")
+  @DisplayName("캐릭터 갤러리(/api/v1/characters/**)는 로그인한 사람만 보내고, 게시물 등장인물 그림은 로그인 없이도 보낸다")
   void routesCharacterGallery() {
     client
         .get()
@@ -112,6 +112,9 @@ class GatewayIntegrationTest {
     assertThat(BACKEND.lastPath()).isEqualTo("/api/v1/characters/looks/abc/image");
 
     client.get().uri("/api/v1/characters").exchange().expectStatus().isUnauthorized();
+    client.get().uri("/api/v1/characters/abc").exchange().expectStatus().isUnauthorized();
+    client.get().uri("/api/v1/characters/looks/abc/image").exchange().expectStatus().isOk();
+    assertThat(BACKEND.lastHeaders()).doesNotContainKey("x-user-id");
   }
 
   @Test
