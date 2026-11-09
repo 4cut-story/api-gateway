@@ -118,6 +118,21 @@ class GatewayIntegrationTest {
   }
 
   @Test
+  @DisplayName("배경음 라이브러리(/api/v1/sounds/**)는 로그인한 사람만 conversation-service로 보낸다")
+  void routesSoundLibrary() {
+    client
+        .get()
+        .uri("/api/v1/sounds/abc/audio")
+        .header("Authorization", "Bearer " + validToken())
+        .exchange()
+        .expectStatus()
+        .isOk();
+    assertThat(BACKEND.lastPath()).isEqualTo("/api/v1/sounds/abc/audio");
+    client.get().uri("/api/v1/sounds").exchange().expectStatus().isUnauthorized();
+    client.get().uri("/api/v1/sounds/abc/audio").exchange().expectStatus().isUnauthorized();
+  }
+
+  @Test
   @DisplayName("인증이 없는 /auth 경로에서도 외부 사용자 헤더를 지운다")
   void stripsForgedHeadersOnPublicPath() {
     client
