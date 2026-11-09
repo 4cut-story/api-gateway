@@ -35,6 +35,8 @@ public class RouteConfig {
                         "/api/v1/conversations/**",
                         "/api/v1/characters",
                         "/api/v1/characters/**",
+                        "/api/v1/sounds",
+                        "/api/v1/sounds/**",
                         "/internal/gpu-jobs/**")
                     .uri(properties.conversationUrl()))
         .route(
