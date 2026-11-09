@@ -28,8 +28,8 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 public class SecurityConfig {
 
   /**
-   * 로그인 없이 볼 수 있는 경로 (첫 화면 포털, 사용자 페이지 {@code /@닉네임}, 게시물 상세와 라이브 모드 재생 정보, 그 아래 등장인물 그림, 캐릭터 갤러리, 배경음 라이브러리). 공개
-   * 범위는 하위 서비스가 보는 사람 기준으로 적용한다 (사용자 헤더가 없으면 전체 공개만).
+   * 로그인 없이 볼 수 있는 경로 (첫 화면 포털, 사용자 페이지 {@code /@닉네임}, 게시물 상세와 라이브 모드 재생 정보, 그 아래 등장인물 그림, 캐릭터 갤러리,
+   * 배경음 라이브러리). 공개 범위는 하위 서비스가 보는 사람 기준으로 적용한다 (사용자 헤더가 없으면 전체 공개만).
    */
   static final String[] ANONYMOUS_GET = {
     "/api/v1/feed",
