@@ -183,6 +183,7 @@ class GatewayIntegrationTest {
             "/api/v1/posts?authorId=abc",
             "/api/v1/posts/abc",
             "/api/v1/posts/abc/image",
+            "/api/v1/posts/abc/live",
             "/api/v1/posts/abc/comments",
             "/api/v1/follows/abc/stats",
             "/api/v1/users?ids=abc",
@@ -198,6 +199,7 @@ class GatewayIntegrationTest {
     client.post().uri("/api/v1/posts").exchange().expectStatus().isUnauthorized();
     client.put().uri("/api/v1/posts/abc/like").exchange().expectStatus().isUnauthorized();
     client.get().uri("/api/v1/comics").exchange().expectStatus().isUnauthorized();
+    client.get().uri("/api/v1/comics/abc/live").exchange().expectStatus().isUnauthorized();
     client.get().uri("/api/v1/me").exchange().expectStatus().isUnauthorized();
     assertThat(BACKEND.lastPath()).isNull();
   }
