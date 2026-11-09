@@ -100,7 +100,7 @@ class GatewayIntegrationTest {
   }
 
   @Test
-  @DisplayName("캐릭터 갤러리(/api/v1/characters/**)는 로그인한 사람만 보내고, 게시물 등장인물 그림은 로그인 없이도 보낸다")
+  @DisplayName("캐릭터 갤러리(/api/v1/characters/**)는 조회(GET)를 로그인 없이도 보내고, 그 밖의 요청은 로그인을 요구한다")
   void routesCharacterGallery() {
     client
         .get()
@@ -111,14 +111,17 @@ class GatewayIntegrationTest {
         .isOk();
     assertThat(BACKEND.lastPath()).isEqualTo("/api/v1/characters/looks/abc/image");
 
-    client.get().uri("/api/v1/characters").exchange().expectStatus().isUnauthorized();
-    client.get().uri("/api/v1/characters/abc").exchange().expectStatus().isUnauthorized();
+    client.get().uri("/api/v1/characters").exchange().expectStatus().isOk();
+    client.get().uri("/api/v1/characters/jobs").exchange().expectStatus().isOk();
+    client.get().uri("/api/v1/characters/abc").exchange().expectStatus().isOk();
+    assertThat(BACKEND.lastPath()).isEqualTo("/api/v1/characters/abc");
     client.get().uri("/api/v1/characters/looks/abc/image").exchange().expectStatus().isOk();
     assertThat(BACKEND.lastHeaders()).doesNotContainKey("x-user-id");
+    client.post().uri("/api/v1/characters").exchange().expectStatus().isUnauthorized();
   }
 
   @Test
-  @DisplayName("배경음 라이브러리(/api/v1/sounds/**)는 로그인한 사람만 conversation-service로 보낸다")
+  @DisplayName("배경음 라이브러리(/api/v1/sounds/**)는 조회(GET)를 로그인 없이도 conversation-service로 보낸다")
   void routesSoundLibrary() {
     client
         .get()
@@ -128,8 +131,13 @@ class GatewayIntegrationTest {
         .expectStatus()
         .isOk();
     assertThat(BACKEND.lastPath()).isEqualTo("/api/v1/sounds/abc/audio");
-    client.get().uri("/api/v1/sounds").exchange().expectStatus().isUnauthorized();
-    client.get().uri("/api/v1/sounds/abc/audio").exchange().expectStatus().isUnauthorized();
+    client.get().uri("/api/v1/sounds").exchange().expectStatus().isOk();
+    client.get().uri("/api/v1/sounds/facets").exchange().expectStatus().isOk();
+    client.get().uri("/api/v1/sounds/abc").exchange().expectStatus().isOk();
+    client.get().uri("/api/v1/sounds/abc/audio").exchange().expectStatus().isOk();
+    assertThat(BACKEND.lastPath()).isEqualTo("/api/v1/sounds/abc/audio");
+    assertThat(BACKEND.lastHeaders()).doesNotContainKey("x-user-id");
+    client.post().uri("/api/v1/sounds").exchange().expectStatus().isUnauthorized();
   }
 
   @Test
