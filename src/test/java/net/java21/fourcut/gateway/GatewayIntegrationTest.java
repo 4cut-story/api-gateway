@@ -217,10 +217,28 @@ class GatewayIntegrationTest {
   }
 
   @Test
+  @DisplayName("조회수 남기기 POST는 토큰 없이 통과하고 방문자 키를 그대로 넘긴다 (사용자 헤더는 지운다)")
+  void anonymousViewIsAllowed() {
+    client
+        .post()
+        .uri("/api/v1/posts/abc/views")
+        .header("X-User-Id", "attacker")
+        .header("X-Viewer-Key", "a".repeat(64))
+        .exchange()
+        .expectStatus()
+        .isOk();
+    assertThat(BACKEND.lastPath()).isEqualTo("/api/v1/posts/abc/views");
+    assertThat(BACKEND.lastHeaders())
+        .doesNotContainKeys("x-user-id", "x-user-roles")
+        .containsEntry("x-viewer-key", "a".repeat(64));
+  }
+
+  @Test
   @DisplayName("공개 보기 경로라도 쓰기와 그 밖의 경로는 토큰이 필요하다")
   void anonymousWriteIsUnauthorized() {
     client.post().uri("/api/v1/posts").exchange().expectStatus().isUnauthorized();
     client.put().uri("/api/v1/posts/abc/like").exchange().expectStatus().isUnauthorized();
+    client.post().uri("/api/v1/posts/abc/comments").exchange().expectStatus().isUnauthorized();
     client.get().uri("/api/v1/comics").exchange().expectStatus().isUnauthorized();
     client.get().uri("/api/v1/comics/abc/live").exchange().expectStatus().isUnauthorized();
     client.get().uri("/api/v1/me").exchange().expectStatus().isUnauthorized();
