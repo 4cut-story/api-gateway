@@ -20,7 +20,7 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
  *   <li>GPU 워커 경로: 워커 토큰만 확인 (사용자 JWT 불가)
  *   <li>로그인·상태 확인 경로: 인증 없음
  *   <li>나머지: {@code /api/**}는 JWT 필수 (JWKS 로컬 검증). 단 공개 만화 보기용 GET({@link #ANONYMOUS_GET})은 토큰 없이도
- *       통과한다. 토큰이 있으면 검증하고 사용자 헤더를 붙인다.
+ *       통과한다. 조회수 남기기({@link #ANONYMOUS_POST})도 토큰 없이 통과한다. 토큰이 있으면 검증하고 사용자 헤더를 붙인다.
  * </ol>
  */
 @Configuration
@@ -49,6 +49,12 @@ public class SecurityConfig {
     "/api/v1/users",
     "/api/v1/users/*"
   };
+
+  /**
+   * 로그인 없이 부를 수 있는 POST: 게시물 조회수 남기기. 방문자는 web이 붙인 {@code X-Viewer-Key}로 구분하고, 볼 수 있는 게시물인지는
+   * content-service가 본다.
+   */
+  static final String[] ANONYMOUS_POST = {"/api/v1/posts/*/views"};
 
   @Bean
   @Order(1)
@@ -87,6 +93,8 @@ public class SecurityConfig {
         .authorizeExchange(
             auth ->
                 auth.pathMatchers(HttpMethod.GET, ANONYMOUS_GET)
+                    .permitAll()
+                    .pathMatchers(HttpMethod.POST, ANONYMOUS_POST)
                     .permitAll()
                     .pathMatchers("/api/**")
                     .authenticated()
