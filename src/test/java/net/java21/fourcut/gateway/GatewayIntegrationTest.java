@@ -141,6 +141,29 @@ class GatewayIntegrationTest {
   }
 
   @Test
+  @DisplayName("RSS 구독(/api/v1/rss-feeds/**)은 로그인한 사용자만 conversation-service로 보낸다 (FR-050)")
+  void routesRssFeeds() {
+    client
+        .post()
+        .uri("/api/v1/rss-feeds/abc/check")
+        .header("Authorization", "Bearer " + validToken())
+        .exchange()
+        .expectStatus()
+        .isOk();
+    assertThat(BACKEND.lastPath()).isEqualTo("/api/v1/rss-feeds/abc/check");
+    assertThat(BACKEND.lastHeaders()).containsEntry("x-user-id", USER);
+    client
+        .get()
+        .uri("/api/v1/rss-feeds")
+        .header("Authorization", "Bearer " + validToken())
+        .exchange()
+        .expectStatus()
+        .isOk();
+    assertThat(BACKEND.lastPath()).isEqualTo("/api/v1/rss-feeds");
+    client.get().uri("/api/v1/rss-feeds").exchange().expectStatus().isUnauthorized();
+  }
+
+  @Test
   @DisplayName("인증이 없는 /auth 경로에서도 외부 사용자 헤더를 지운다")
   void stripsForgedHeadersOnPublicPath() {
     client
